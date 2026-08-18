@@ -1851,11 +1851,15 @@ func (mycli *MyClient) myEventHandler(rawEvt interface{}) {
 		doWebhook = true
 		postMap["event"] = "Archive"
 
-		dataMap := postMap["data"].(map[string]interface{})
-		dataMap["JID"] = evt.JID
-		dataMap["Timestamp"] = evt.Timestamp
-		dataMap["Action"] = evt.Action
-		dataMap["FromFullSync"] = evt.FromFullSync
+		// postMap["data"] ainda é o *events.Archive cru aqui — o cast direto
+		// para map panicava em todo evento Archive (ex.: sync inicial de
+		// histórico dispara milhares). Monta o map explicitamente.
+		dataMap := map[string]interface{}{
+			"JID":          evt.JID,
+			"Timestamp":    evt.Timestamp,
+			"Action":       evt.Action,
+			"FromFullSync": evt.FromFullSync,
+		}
 		postMap["data"] = dataMap
 
 		mycli.loggerWrapper.GetLogger(mycli.userID).LogInfo("[%s] Chat archived", mycli.userID)
